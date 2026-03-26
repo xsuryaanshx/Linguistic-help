@@ -33,13 +33,13 @@ body { font-family: Arial; background:#f3f4f6; }
 
 <!-- MIC -->
 <div class="flex flex-col items-center gap-4 mb-6">
-  <button id="micBtn" class="w-32 h-32 bg-blue-600 text-white rounded-full text-4xl transition-all duration-300 shadow-lg">
+  <button id="micBtn" class="w-32 h-32 bg-blue-600 text-white rounded-full text-4xl shadow-lg transition-all">
     🎤
   </button>
   <p id="statusText" class="text-gray-500">Tap to speak Italian</p>
 </div>
 
-<!-- OUTPUT CARD -->
+<!-- OUTPUT -->
 <div class="bg-white p-6 rounded-xl shadow w-full max-w-xl space-y-4 mb-6">
 
   <div>
@@ -62,98 +62,97 @@ body { font-family: Arial; background:#f3f4f6; }
 
 <!-- INPUT -->
 <div class="w-full max-w-xl space-y-2">
-  <input id="replyInput" class="w-full p-3 border rounded" placeholder="Type reply..." />
+  <input id="replyInput" class="w-full p-3 border rounded" placeholder="Type reply in English..." />
   <button id="sendBtn" class="w-full bg-green-600 text-white p-3 rounded hover:bg-green-700">
     Translate & Speak
   </button>
 </div>
 
 <script>
-const API_URL = "YOUR_SUPABASE_FUNCTION_URL";
+const API_URL = "https://owbievgoqyuaxlkatuaa.supabase.co/functions/v1/translate-assistant";
 
 const micBtn = document.getElementById("micBtn");
 const statusText = document.getElementById("statusText");
 
-// Speech recognition
+// 🎤 Speech Recognition
 const recognition = new webkitSpeechRecognition();
 recognition.lang = "it-IT";
 
-// Start listening
 micBtn.onclick = () => {
   micBtn.classList.add("listening");
   statusText.innerText = "Listening...";
   recognition.start();
 };
 
-// Stop listening
 recognition.onend = () => {
   micBtn.classList.remove("listening");
   statusText.innerText = "Tap to speak Italian";
 };
 
-// When speech is captured
 recognition.onresult = async (event) => {
   const text = event.results[0][0].transcript;
+  handleIncomingSpeech(text);
+};
 
+// 🧠 HANDLE ITALIAN INPUT
+async function handleIncomingSpeech(text) {
   document.getElementById("originalText").innerText = text;
   document.getElementById("translatedText").innerText = "Translating...";
 
   try {
     const res = await fetch(API_URL, {
       method: "POST",
-      headers: {"Content-Type": "application/json"},
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text })
     });
 
     const data = await res.json();
 
     document.getElementById("translatedText").innerText = data.translation;
-
     showSuggestions(data.suggestions);
 
   } catch (err) {
-    document.getElementById("translatedText").innerText = "Error. Check API.";
+    document.getElementById("translatedText").innerText = "API error";
     console.error(err);
   }
-};
+}
 
-// Show suggestion buttons
+// 💡 SUGGESTIONS
 function showSuggestions(text) {
   const container = document.getElementById("suggestions");
   container.innerHTML = "";
 
-  const lines = text.split("\n");
-
-  lines.forEach(line => {
+  text.split("\n").forEach(line => {
     if (line.trim()) {
       const btn = document.createElement("button");
-
       btn.innerText = line;
       btn.className = "bg-blue-100 px-3 py-2 rounded text-sm whitespace-nowrap hover:bg-blue-200";
-
       btn.onclick = () => handleReply(line);
-
       container.appendChild(btn);
     }
   });
 }
 
-// Handle reply
+// ✍️ CLICK SUGGESTION
 function handleReply(text) {
   document.getElementById("replyInput").value = text;
-  translateAndSpeak(text);
+  handleUserReply(text);
 }
 
-// Manual send
+// 🟢 BUTTON CLICK FIXED HERE
 document.getElementById("sendBtn").onclick = () => {
   const text = document.getElementById("replyInput").value;
-  translateAndSpeak(text);
+  if (!text) return;
+  handleUserReply(text);
 };
 
-// Translate + Speak
-async function translateAndSpeak(text) {
+// 🔁 HANDLE USER REPLY (THIS WAS MISSING)
+async function handleUserReply(text) {
+  document.getElementById("originalText").innerText = text;
+  document.getElementById("translatedText").innerText = "Translating...";
+
   try {
-    const res = await fetch("https://libretranslate.de/translate", {
+    const res = await fetch("https://translate.argosopentech.com/translate", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify({
@@ -165,14 +164,16 @@ async function translateAndSpeak(text) {
 
     const data = await res.json();
 
+    document.getElementById("translatedText").innerText = data.translatedText;
+
     speakItalian(data.translatedText);
 
   } catch (err) {
-    console.error(err);
+    document.getElementById("translatedText").innerText = "Error translating";
   }
 }
 
-// Text-to-speech
+// 🔊 SPEAK
 function speakItalian(text) {
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "it-IT";
