@@ -1,132 +1,104 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Linguistic Help</title>
-<style>
-body { font-family: Arial; background:#0b0f14; color:white; text-align:center; }
-button { padding:10px 20px; margin:10px; border:none; border-radius:10px; cursor:pointer; }
-#mic { background:#4d9eff; color:white; border-radius:50%; width:120px; height:120px; font-size:40px; }
-.card { background:#111; padding:20px; margin:20px; border-radius:12px; }
-</style>
-</head>
-
-<body>
-
-<h1>Linguistic Help</h1>
-
-<select id="source">
-  <option>Italian</option>
-  <option>English</option>
-  <option>Spanish</option>
-  <option>French</option>
-</select>
-
-<select id="target">
-  <option>English</option>
-  <option>Italian</option>
-  <option>Spanish</option>
-  <option>French</option>
-</select>
-
-<br><br>
-
-<button id="mic">🎤</button>
-
-<div class="card">
-  <h3>Original</h3>
-  <p id="original">...</p>
-
-  <h3>Translation</h3>
-  <p id="translation">...</p>
-</div>
-
-<input id="input" placeholder="Type here..." />
-<button onclick="sendText()">Translate</button>
-
 <script>
+// ── CONFIG ──────────────────────────────────────────────────────
+const SUPABASE_URL = "https://owbievgoqyuaxlkatuaa.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93YmlldmdvcXl1YXhsa2F0dWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MzUyOTIsImV4cCI6MjA5MDExMTI5Mn0.3xDXziXLRG6vmtfKmZ8KuHgM6mCh6RK4PYsj2HZWks0"; // ⚠️ replace
+const EDGE_FN = `${SUPABASE_URL}/functions/v1/translate-assistant`;
 
-// ✅ YOUR SUPABASE FUNCTION
-const API = "https://owbievgoqyuaxlkatuaa.supabase.co/functions/v1/translate-assistant";
-
-// ✅ TRANSLATE FUNCTION (FIXED)
-async function translate(text, source, target) {
+// ── FIXED TRANSLATE FUNCTION ────────────────────────────────────
+async function translate(text, srcCode, tgtCode) {
   try {
-    const res = await fetch(API, {
+    const res = await fetch(EDGE_FN, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`, // ✅ FIX
+        "apikey": SUPABASE_ANON_KEY                    // ✅ FIX
+      },
       body: JSON.stringify({
         text: text,
-        source_lang: source,
-        target_lang: target
+        source_lang: srcCode,
+        target_lang: tgtCode
       })
     });
 
     const data = await res.json();
-    console.log("API response:", data);
 
-    return data.translation || "[Error]";
+    if (!res.ok) {
+      console.error("API ERROR:", data);
+      return "[Translation failed]";
+    }
+
+    return data.translation || "[No translation]";
   } catch (err) {
-    console.error(err);
-    return "[API error]";
+    console.error("FETCH ERROR:", err);
+    return "[Network error]";
   }
 }
 
-// 🎤 SPEECH RECOGNITION
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+// ── TTS ─────────────────────────────────────────────────────────
+function speakOut(text, lang) {
+  if (!text || text.startsWith("[")) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = lang;
+  u.rate = 0.95;
+  speechSynthesis.speak(u);
+}
 
-let recog;
+// ── SEND TYPED MESSAGE ──────────────────────────────────────────
+async function sendTyped() {
+  const input = document.getElementById("typeInput");
+  const text = input.value.trim();
+  if (!text) return;
 
-if (SpeechRecognition) {
-  recog = new SpeechRecognition();
-  recog.continuous = false;
-  recog.interimResults = false;
+  input.value = "";
 
-  document.getElementById("mic").onclick = () => {
-    recog.lang = document.getElementById("source").value;
+  const outputOriginal = document.querySelector(".msg-original");
+  const outputTranslation = document.querySelector(".msg-translation");
+
+  outputOriginal.textContent = text;
+  outputTranslation.textContent = "Translating...";
+
+  const src = document.getElementById("myLang").selectedOptions[0].dataset.code;
+  const tgt = document.getElementById("theirLang").selectedOptions[0].dataset.code;
+
+  const result = await translate(text, src, tgt);
+
+  outputTranslation.textContent = result;
+
+  speakOut(result, document.getElementById("theirLang").value);
+}
+
+// ── BUTTON EVENTS ───────────────────────────────────────────────
+document.getElementById("typeSend").onclick = sendTyped;
+document.getElementById("typeInput").addEventListener("keydown", e => {
+  if (e.key === "Enter") sendTyped();
+});
+
+// ── BASIC MIC (optional keep simple) ─────────────────────────────
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+if (SR) {
+  const recog = new SR();
+  recog.lang = "it-IT";
+
+  document.getElementById("meBtn").onclick = () => {
     recog.start();
   };
 
   recog.onresult = async (e) => {
     const text = e.results[0][0].transcript;
-    document.getElementById("original").innerText = text;
 
-    const translation = await translate(
-      text,
-      document.getElementById("source").value,
-      document.getElementById("target").value
-    );
+    const outputOriginal = document.querySelector(".msg-original");
+    const outputTranslation = document.querySelector(".msg-translation");
 
-    document.getElementById("translation").innerText = translation;
+    outputOriginal.textContent = text;
+    outputTranslation.textContent = "Translating...";
 
-    speak(translation);
+    const result = await translate(text, "it", "en");
+
+    outputTranslation.textContent = result;
+    speakOut(result, "en-US");
   };
 }
-
-// 🗣️ TEXT INPUT
-async function sendText() {
-  const text = document.getElementById("input").value;
-  document.getElementById("original").innerText = text;
-
-  const translation = await translate(
-    text,
-    document.getElementById("source").value,
-    document.getElementById("target").value
-  );
-
-  document.getElementById("translation").innerText = translation;
-  speak(translation);
-}
-
-// 🔊 TEXT TO SPEECH
-function speak(text) {
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = document.getElementById("target").value;
-  speechSynthesis.speak(u);
-}
-
 </script>
-
-</body>
-</html>
