@@ -1,21 +1,23 @@
 <script>
+document.addEventListener("DOMContentLoaded", () => {
+
 // ── CONFIG ──────────────────────────────────────────────────────
 const SUPABASE_URL = "https://owbievgoqyuaxlkatuaa.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93YmlldmdvcXl1YXhsa2F0dWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MzUyOTIsImV4cCI6MjA5MDExMTI5Mn0.3xDXziXLRG6vmtfKmZ8KuHgM6mCh6RK4PYsj2HZWks0"; // ⚠️ replace
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93YmlldmdvcXl1YXhsa2F0dWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MzUyOTIsImV4cCI6MjA5MDExMTI5Mn0.3xDXziXLRG6vmtfKmZ8KuHgM6mCh6RK4PYsj2HZWks0";
 const EDGE_FN = `${SUPABASE_URL}/functions/v1/translate-assistant`;
 
-// ── FIXED TRANSLATE FUNCTION ────────────────────────────────────
+// ── TRANSLATE ───────────────────────────────────────────────────
 async function translate(text, srcCode, tgtCode) {
   try {
     const res = await fetch(EDGE_FN, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`, // ✅ FIX
-        "apikey": SUPABASE_ANON_KEY                    // ✅ FIX
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+        "apikey": SUPABASE_ANON_KEY
       },
       body: JSON.stringify({
-        text: text,
+        text,
         source_lang: srcCode,
         target_lang: tgtCode
       })
@@ -35,7 +37,7 @@ async function translate(text, srcCode, tgtCode) {
   }
 }
 
-// ── TTS ─────────────────────────────────────────────────────────
+// ── TEXT TO SPEECH ──────────────────────────────────────────────
 function speakOut(text, lang) {
   if (!text || text.startsWith("[")) return;
   speechSynthesis.cancel();
@@ -45,60 +47,93 @@ function speakOut(text, lang) {
   speechSynthesis.speak(u);
 }
 
+// ── ADD MESSAGE TO CHAT (FIXED FOR YOUR UI) ─────────────────────
+function addMessage(text, isMe) {
+  const feed = document.getElementById("feed");
+  if (!feed) return;
+
+  const msg = document.createElement("div");
+  msg.className = `msg ${isMe ? "me" : "them"}`;
+
+  msg.innerHTML = `
+    <div class="msg-original">${text}</div>
+    <div class="msg-translation">Translating...</div>
+  `;
+
+  feed.appendChild(msg);
+  feed.scrollTop = feed.scrollHeight;
+
+  return msg;
+}
+
 // ── SEND TYPED MESSAGE ──────────────────────────────────────────
 async function sendTyped() {
   const input = document.getElementById("typeInput");
+  if (!input) return;
+
   const text = input.value.trim();
   if (!text) return;
 
   input.value = "";
 
-  const outputOriginal = document.querySelector(".msg-original");
-  const outputTranslation = document.querySelector(".msg-translation");
+  const msgEl = addMessage(text, true);
 
-  outputOriginal.textContent = text;
-  outputTranslation.textContent = "Translating...";
-
-  const src = document.getElementById("myLang").selectedOptions[0].dataset.code;
-  const tgt = document.getElementById("theirLang").selectedOptions[0].dataset.code;
+  const src = document.getElementById("myLang")?.selectedOptions[0]?.dataset.code || "en";
+  const tgt = document.getElementById("theirLang")?.selectedOptions[0]?.dataset.code || "it";
 
   const result = await translate(text, src, tgt);
 
-  outputTranslation.textContent = result;
+  if (msgEl) {
+    msgEl.querySelector(".msg-translation").textContent = result;
+  }
 
-  speakOut(result, document.getElementById("theirLang").value);
+  speakOut(result, document.getElementById("theirLang")?.value || "it-IT");
 }
 
-// ── BUTTON EVENTS ───────────────────────────────────────────────
-document.getElementById("typeSend").onclick = sendTyped;
-document.getElementById("typeInput").addEventListener("keydown", e => {
-  if (e.key === "Enter") sendTyped();
-});
+// ── BUTTON EVENTS (SAFE) ────────────────────────────────────────
+const sendBtn = document.getElementById("typeSend");
+const input = document.getElementById("typeInput");
 
-// ── BASIC MIC (optional keep simple) ─────────────────────────────
+if (sendBtn && input) {
+  sendBtn.onclick = sendTyped;
+
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") sendTyped();
+  });
+}
+
+// ── MICROPHONE (FIXED) ──────────────────────────────────────────
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 
 if (SR) {
   const recog = new SR();
-  recog.lang = "it-IT";
 
-  document.getElementById("meBtn").onclick = () => {
-    recog.start();
-  };
+  const meBtn = document.getElementById("meBtn");
+
+  if (meBtn) {
+    meBtn.onclick = () => {
+      recog.lang = document.getElementById("myLang")?.value || "en-US";
+      recog.start();
+    };
+  }
 
   recog.onresult = async (e) => {
     const text = e.results[0][0].transcript;
 
-    const outputOriginal = document.querySelector(".msg-original");
-    const outputTranslation = document.querySelector(".msg-translation");
+    const msgEl = addMessage(text, true);
 
-    outputOriginal.textContent = text;
-    outputTranslation.textContent = "Translating...";
+    const src = document.getElementById("myLang")?.selectedOptions[0]?.dataset.code || "en";
+    const tgt = document.getElementById("theirLang")?.selectedOptions[0]?.dataset.code || "it";
 
-    const result = await translate(text, "it", "en");
+    const result = await translate(text, src, tgt);
 
-    outputTranslation.textContent = result;
-    speakOut(result, "en-US");
+    if (msgEl) {
+      msgEl.querySelector(".msg-translation").textContent = result;
+    }
+
+    speakOut(result, document.getElementById("theirLang")?.value || "it-IT");
   };
 }
+
+});
 </script>
