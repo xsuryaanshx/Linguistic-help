@@ -33,6 +33,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .glow-me{position:fixed;bottom:-180px;right:-180px;width:480px;height:480px;border-radius:50%;background:radial-gradient(circle,rgba(77,158,255,.06) 0%,transparent 70%);pointer-events:none;z-index:0;transition:opacity .6s}
 .glow-them.hot,.glow-me.hot{opacity:4}
 .app{position:relative;z-index:1;max-width:480px;margin:0 auto;padding:20px 16px 36px;display:flex;flex-direction:column;gap:14px;min-height:100vh}
+
 /* header */
 .header{display:flex;align-items:center;justify-content:space-between;padding:4px 0 8px}
 .logo{font-size:19px;font-weight:800;letter-spacing:-.5px;color:var(--text)}
@@ -41,6 +42,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .call-dot{width:7px;height:7px;border-radius:50%;background:var(--muted2);transition:background .3s}
 .call-dot.live{background:var(--red);animation:blink 1.2s ease-in-out infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
 /* lang row */
 .lang-row{display:flex;align-items:center;gap:8px;background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px}
 .lang-block{flex:1}
@@ -51,6 +53,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .lang-sel:focus{border-color:var(--me)}
 .swap-btn{background:var(--s2);border:1px solid var(--border2);border-radius:9px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;color:var(--muted);transition:all .25s;flex-shrink:0}
 .swap-btn:hover{border-color:var(--me);color:var(--me);transform:rotate(180deg)}
+
 /* feed */
 .feed-wrap{flex:1;min-height:240px;max-height:36vh;background:var(--s1);border:1px solid var(--border);border-radius:var(--r);overflow-y:auto;display:flex;flex-direction:column;scroll-behavior:smooth}
 .feed-wrap::-webkit-scrollbar{width:3px}
@@ -71,10 +74,12 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .msg-speak-btn:hover{color:var(--text)}
 .msg-original{font-size:14px;font-weight:500;line-height:1.45;color:var(--text);margin-bottom:4px}
 .msg-translation{font-size:13px;font-weight:400;line-height:1.45;color:var(--muted);font-style:italic}
+.msg-translation.loading{display:flex;align-items:center;gap:5px}
 .dots span{display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--muted);margin:0 1px;animation:dot 1.2s ease-in-out infinite}
 .dots span:nth-child(2){animation-delay:.2s}
 .dots span:nth-child(3){animation-delay:.4s}
 @keyframes dot{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-4px)}}
+
 /* controls */
 .controls{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .ctrl-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:14px 14px 16px;display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden;transition:border-color .3s}
@@ -100,6 +105,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .listen-btn.me-btn:hover{background:rgba(77,158,255,.2)}
 .listen-btn.me-btn.active{background:var(--me);color:#fff;box-shadow:0 4px 20px rgba(77,158,255,.35);animation:ctrlPulse 1.5s ease-in-out infinite}
 @keyframes ctrlPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.02)}}
+
 /* type bar */
 .type-bar{display:flex;gap:8px;align-items:center;background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:8px 8px 8px 14px;transition:border-color .2s}
 .type-bar:focus-within{border-color:var(--me-border)}
@@ -108,6 +114,12 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .type-send{background:var(--me);border:none;border-radius:9px;width:38px;height:38px;cursor:pointer;color:#fff;font-size:16px;display:flex;align-items:center;justify-content:center;transition:opacity .2s,transform .15s;flex-shrink:0}
 .type-send:hover{opacity:.85}
 .type-send:active{transform:scale(.93)}
+
+/* api note */
+.api-note{font-size:11px;color:var(--muted);text-align:center;padding:2px 0 0;letter-spacing:.2px}
+.api-note a{color:var(--me);text-decoration:none}
+.api-note a:hover{text-decoration:underline}
+
 /* toast */
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--s3);border:1px solid var(--border2);border-radius:24px;padding:9px 18px;font-size:12px;font-weight:600;color:var(--text);z-index:999;transition:transform .3s cubic-bezier(.34,1.56,.64,1);pointer-events:none;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.5)}
 .toast.show{transform:translateX(-50%) translateY(0)}
@@ -134,46 +146,46 @@ select option{background:#1a1d22}
     <div class="lang-block">
       <div class="lang-lbl them">Their Language</div>
       <select class="lang-sel" id="theirLang">
-        <option value="it-IT" data-code="it">🇮🇹 Italian</option>
-        <option value="es-ES" data-code="es">🇪🇸 Spanish</option>
-        <option value="fr-FR" data-code="fr">🇫🇷 French</option>
-        <option value="de-DE" data-code="de">🇩🇪 German</option>
-        <option value="pt-PT" data-code="pt">🇵🇹 Portuguese</option>
-        <option value="ja-JP" data-code="ja">🇯🇵 Japanese</option>
-        <option value="ko-KR" data-code="ko">🇰🇷 Korean</option>
-        <option value="zh-CN" data-code="zh">🇨🇳 Chinese</option>
-        <option value="ar-SA" data-code="ar">🇸🇦 Arabic</option>
-        <option value="hi-IN" data-code="hi">🇮🇳 Hindi</option>
-        <option value="ru-RU" data-code="ru">🇷🇺 Russian</option>
-        <option value="tr-TR" data-code="tr">🇹🇷 Turkish</option>
-        <option value="nl-NL" data-code="nl">🇳🇱 Dutch</option>
-        <option value="pl-PL" data-code="pl">🇵🇱 Polish</option>
-        <option value="sv-SE" data-code="sv">🇸🇪 Swedish</option>
-        <option value="uk-UA" data-code="uk">🇺🇦 Ukrainian</option>
-        <option value="en-US" data-code="en">🇬🇧 English</option>
+        <option value="it" data-bcp="it-IT">🇮🇹 Italian</option>
+        <option value="es" data-bcp="es-ES">🇪🇸 Spanish</option>
+        <option value="fr" data-bcp="fr-FR">🇫🇷 French</option>
+        <option value="de" data-bcp="de-DE">🇩🇪 German</option>
+        <option value="pt" data-bcp="pt-PT">🇵🇹 Portuguese</option>
+        <option value="ja" data-bcp="ja-JP">🇯🇵 Japanese</option>
+        <option value="ko" data-bcp="ko-KR">🇰🇷 Korean</option>
+        <option value="zh" data-bcp="zh-CN">🇨🇳 Chinese</option>
+        <option value="ar" data-bcp="ar-SA">🇸🇦 Arabic</option>
+        <option value="hi" data-bcp="hi-IN">🇮🇳 Hindi</option>
+        <option value="ru" data-bcp="ru-RU">🇷🇺 Russian</option>
+        <option value="tr" data-bcp="tr-TR">🇹🇷 Turkish</option>
+        <option value="nl" data-bcp="nl-NL">🇳🇱 Dutch</option>
+        <option value="pl" data-bcp="pl-PL">🇵🇱 Polish</option>
+        <option value="sv" data-bcp="sv-SE">🇸🇪 Swedish</option>
+        <option value="uk" data-bcp="uk-UA">🇺🇦 Ukrainian</option>
+        <option value="en" data-bcp="en-US">🇬🇧 English</option>
       </select>
     </div>
     <button class="swap-btn" id="swapBtn" title="Swap languages">⇄</button>
     <div class="lang-block">
       <div class="lang-lbl me">My Language</div>
       <select class="lang-sel" id="myLang">
-        <option value="en-US" data-code="en" selected>🇬🇧 English</option>
-        <option value="it-IT" data-code="it">🇮🇹 Italian</option>
-        <option value="es-ES" data-code="es">🇪🇸 Spanish</option>
-        <option value="fr-FR" data-code="fr">🇫🇷 French</option>
-        <option value="de-DE" data-code="de">🇩🇪 German</option>
-        <option value="pt-PT" data-code="pt">🇵🇹 Portuguese</option>
-        <option value="ja-JP" data-code="ja">🇯🇵 Japanese</option>
-        <option value="ko-KR" data-code="ko">🇰🇷 Korean</option>
-        <option value="zh-CN" data-code="zh">🇨🇳 Chinese</option>
-        <option value="ar-SA" data-code="ar">🇸🇦 Arabic</option>
-        <option value="hi-IN" data-code="hi">🇮🇳 Hindi</option>
-        <option value="ru-RU" data-code="ru">🇷🇺 Russian</option>
-        <option value="tr-TR" data-code="tr">🇹🇷 Turkish</option>
-        <option value="nl-NL" data-code="nl">🇳🇱 Dutch</option>
-        <option value="pl-PL" data-code="pl">🇵🇱 Polish</option>
-        <option value="sv-SE" data-code="sv">🇸🇪 Swedish</option>
-        <option value="uk-UA" data-code="uk">🇺🇦 Ukrainian</option>
+        <option value="en" data-bcp="en-US" selected>🇬🇧 English</option>
+        <option value="it" data-bcp="it-IT">🇮🇹 Italian</option>
+        <option value="es" data-bcp="es-ES">🇪🇸 Spanish</option>
+        <option value="fr" data-bcp="fr-FR">🇫🇷 French</option>
+        <option value="de" data-bcp="de-DE">🇩🇪 German</option>
+        <option value="pt" data-bcp="pt-PT">🇵🇹 Portuguese</option>
+        <option value="ja" data-bcp="ja-JP">🇯🇵 Japanese</option>
+        <option value="ko" data-bcp="ko-KR">🇰🇷 Korean</option>
+        <option value="zh" data-bcp="zh-CN">🇨🇳 Chinese</option>
+        <option value="ar" data-bcp="ar-SA">🇸🇦 Arabic</option>
+        <option value="hi" data-bcp="hi-IN">🇮🇳 Hindi</option>
+        <option value="ru" data-bcp="ru-RU">🇷🇺 Russian</option>
+        <option value="tr" data-bcp="tr-TR">🇹🇷 Turkish</option>
+        <option value="nl" data-bcp="nl-NL">🇳🇱 Dutch</option>
+        <option value="pl" data-bcp="pl-PL">🇵🇱 Polish</option>
+        <option value="sv" data-bcp="sv-SE">🇸🇪 Swedish</option>
+        <option value="uk" data-bcp="uk-UA">🇺🇦 Ukrainian</option>
       </select>
     </div>
   </div>
@@ -203,37 +215,34 @@ select option{background:#1a1d22}
     <button class="type-send" id="typeSend">↗</button>
   </div>
 
+  <p class="api-note">Powered by <a href="https://mymemory.translated.net" target="_blank">MyMemory</a> free translation · No API key needed</p>
+
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-// ── CONFIG ──────────────────────────────────────────────────────
-const SUPABASE_URL      = "https://owbievgoqyuaxlkatuaa.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93YmlldmdvcXl1YXhsa2F0dWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MzUyOTIsImV4cCI6MjA5MDExMTI5Mn0.3xDXziXLRG6vmtfKmZ8KuHgM6mCh6RK4PYsj2HZWks0"; // ← paste here
-const EDGE_FN           = `${SUPABASE_URL}/functions/v1/translate-assistant`;
-
 // ── ELEMENTS ────────────────────────────────────────────────────
-const feed       = document.getElementById("feed");
-const feedEmpty  = document.getElementById("feedEmpty");
-const themCard   = document.getElementById("themCard");
-const meCard     = document.getElementById("meCard");
-const themBtn    = document.getElementById("themBtn");
-const meBtn      = document.getElementById("meBtn");
-const themWave   = document.getElementById("themWave");
-const meWave     = document.getElementById("meWave");
-const theirLang  = document.getElementById("theirLang");
-const myLang     = document.getElementById("myLang");
-const swapBtn    = document.getElementById("swapBtn");
-const themFlag   = document.getElementById("themFlag");
-const meFlag     = document.getElementById("meFlag");
-const callDot    = document.getElementById("callDot");
-const callLabel  = document.getElementById("callLabel");
-const glowThem   = document.getElementById("glowThem");
-const glowMe     = document.getElementById("glowMe");
-const typeInput  = document.getElementById("typeInput");
-const typeSend   = document.getElementById("typeSend");
-const toast      = document.getElementById("toast");
+const feed      = document.getElementById("feed");
+const feedEmpty = document.getElementById("feedEmpty");
+const themCard  = document.getElementById("themCard");
+const meCard    = document.getElementById("meCard");
+const themBtn   = document.getElementById("themBtn");
+const meBtn     = document.getElementById("meBtn");
+const themWave  = document.getElementById("themWave");
+const meWave    = document.getElementById("meWave");
+const theirLang = document.getElementById("theirLang");
+const myLang    = document.getElementById("myLang");
+const swapBtn   = document.getElementById("swapBtn");
+const themFlag  = document.getElementById("themFlag");
+const meFlag    = document.getElementById("meFlag");
+const callDot   = document.getElementById("callDot");
+const callLabel = document.getElementById("callLabel");
+const glowThem  = document.getElementById("glowThem");
+const glowMe    = document.getElementById("glowMe");
+const typeInput = document.getElementById("typeInput");
+const typeSend  = document.getElementById("typeSend");
+const toast     = document.getElementById("toast");
 
 // ── STATE ────────────────────────────────────────────────────────
 let themListening = false, meListening = false;
@@ -246,11 +255,18 @@ function showToast(msg, ms=2400) {
   toast.classList.add("show");
   setTimeout(() => toast.classList.remove("show"), ms);
 }
-function getFlag(sel) { return sel.options[sel.selectedIndex]?.textContent.split(" ")[0] || "🌐"; }
-function getCode(sel) { return sel.options[sel.selectedIndex]?.dataset.code || "en"; }
-function getBcp(sel)  { return sel.value; }
-function timeStr()    { return new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}); }
-function escHtml(t)   { return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+// Returns the 2-letter ISO code for the select (option value)
+function getCode(sel) { return sel.value; }
+
+// Returns the BCP-47 tag for speech recognition / TTS
+function getBcp(sel) {
+  return sel.options[sel.selectedIndex]?.dataset.bcp || sel.value;
+}
+
+function getFlag(sel) {
+  return sel.options[sel.selectedIndex]?.textContent.split(" ")[0] || "🌐";
+}
 
 function updateFlags() {
   themFlag.textContent = getFlag(theirLang);
@@ -260,6 +276,12 @@ theirLang.addEventListener("change", updateFlags);
 myLang.addEventListener("change", updateFlags);
 updateFlags();
 
+function timeStr() {
+  return new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+}
+function escHtml(t) {
+  return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
 function setCallStatus(on) {
   callDot.classList.toggle("live", on);
   callLabel.textContent = on ? "LIVE" : "STANDBY";
@@ -286,96 +308,108 @@ function animateWave(el, on) {
 }
 
 // ── FEED ─────────────────────────────────────────────────────────
-function addMessage(who, original, speakLang) {
+function addMessage(who, original) {
   feedEmpty.style.display = "none";
   const msg = document.createElement("div");
   msg.className = `msg ${who}`;
   msg.innerHTML = `
     <div class="msg-meta">
       <span class="msg-who">${who==="them"?"THEM":"ME"}</span>
-      <button class="msg-speak-btn">🔊</button>
+      <button class="msg-speak-btn" title="Speak translation">🔊</button>
       <span class="msg-time">${timeStr()}</span>
     </div>
     <div class="msg-original">${escHtml(original)}</div>
-    <div class="msg-translation">
-      <span class="dots"><span></span><span></span><span></span></span> Translating
+    <div class="msg-translation loading">
+      <span class="dots"><span></span><span></span><span></span></span>&nbsp;Translating…
     </div>`;
   feed.appendChild(msg);
   feed.scrollTop = feed.scrollHeight;
-  // speak btn wired after translation fills in
   return msg;
 }
 
-function fillTranslation(msgEl, translation, speakLang) {
+function fillTranslation(msgEl, translation, speakBcp) {
   const el = msgEl.querySelector(".msg-translation");
+  el.classList.remove("loading");
   el.textContent = translation;
-  msgEl.querySelector(".msg-speak-btn").onclick = () => speakOut(translation, speakLang);
-  speakOut(translation, speakLang);
+  msgEl.querySelector(".msg-speak-btn").onclick = () => speakOut(translation, speakBcp);
+  speakOut(translation, speakBcp);
 }
 
 // ── TTS ──────────────────────────────────────────────────────────
-function speakOut(text, lang) {
-  if (!text || text.startsWith("[Error")) return;
+function speakOut(text, bcp) {
+  if (!text || text.startsWith("⚠️")) return;
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
-  u.lang = lang; u.rate = 0.94;
+  u.lang = bcp;
+  u.rate = 0.94;
   speechSynthesis.speak(u);
 }
 
-// ── TRANSLATE ────────────────────────────────────────────────────
+// ── TRANSLATE — MyMemory (free, no key) ──────────────────────────
+// MyMemory API: https://api.mymemory.translated.net/get?q=TEXT&langpair=SRC|TGT
+// Free tier: 5000 chars/day. More with email param.
 async function translate(text, srcCode, tgtCode) {
-  if (SUPABASE_ANON_KEY !== "YOUR_SUPABASE_ANON_KEY") {
-    try {
-      const r = await fetch(EDGE_FN, {
-        method: "POST",
-        headers: { "Content-Type":"application/json", "Authorization":`Bearer ${SUPABASE_ANON_KEY}` },
-        body: JSON.stringify({ text, source_lang: srcCode, target_lang: tgtCode, mode: "call" })
-      });
-      if (r.ok) { const d = await r.json(); return d.translation || d.translatedText || text; }
-    } catch(e) { console.warn("Supabase failed:", e); }
+  if (srcCode === tgtCode) return text; // nothing to translate
+
+  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${srcCode}|${tgtCode}`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    // MyMemory returns responseStatus 200 on success
+    if (data.responseStatus === 200 && data.responseData?.translatedText) {
+      let t = data.responseData.translatedText;
+      // MyMemory sometimes returns ALL CAPS for unsupported pairs — detect & warn
+      if (t === t.toUpperCase() && t.length > 4 && /[A-Z]/.test(t)) {
+        // Try first match alternative if available
+        const alt = data.matches?.[0]?.translation;
+        if (alt && alt !== t) t = alt;
+      }
+      return t;
+    }
+    throw new Error(data.responseDetails || "Unknown error");
+  } catch(e) {
+    console.error("Translation error:", e);
+    return `⚠️ Translation failed: ${e.message}`;
   }
-  // Fallback: LibreTranslate public mirrors
-  for (const url of ["https://translate.argosopentech.com/translate","https://libretranslate.com/translate"]) {
-    try {
-      const r = await fetch(url, {
-        method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({ q: text, source: srcCode, target: tgtCode, format:"text" })
-      });
-      if (!r.ok) continue;
-      const d = await r.json();
-      if (d.translatedText) return d.translatedText;
-    } catch(_) {}
-  }
-  return `[Error: could not translate]`;
 }
 
-// ── RECOGNITION FACTORY ──────────────────────────────────────────
+// ── SPEECH RECOGNITION FACTORY ───────────────────────────────────
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-function makeRecog(lang, onResult, onEnd, onErr) {
+function makeRecog(bcp, onResult, onEnd, onErr) {
   if (!SR) return null;
   const r = new SR();
-  r.continuous = false; r.interimResults = false; r.maxAlternatives = 1; r.lang = lang;
+  r.continuous = false;
+  r.interimResults = false;
+  r.maxAlternatives = 1;
+  r.lang = bcp;
   r.onresult = e => onResult(e.results[0][0].transcript);
   r.onend    = onEnd;
-  r.onerror  = e => { if (e.error!=="no-speech"&&e.error!=="aborted") onErr(e.error); else onEnd(); };
+  r.onerror  = e => {
+    if (e.error !== "no-speech" && e.error !== "aborted") onErr(e.error);
+    else onEnd();
+  };
   return r;
 }
 
 // ── THEIR SIDE ───────────────────────────────────────────────────
 function startThemListening() {
+  const bcp = getBcp(theirLang);
   themRecog = makeRecog(
-    getBcp(theirLang),
+    bcp,
     async (text) => {
-      const msgEl = addMessage("them", text, getBcp(myLang));
-      glowThem.classList.add("hot"); setTimeout(()=>glowThem.classList.remove("hot"),1500);
+      const msgEl = addMessage("them", text);
+      glowThem.classList.add("hot");
+      setTimeout(() => glowThem.classList.remove("hot"), 1500);
       const t = await translate(text, getCode(theirLang), getCode(myLang));
       fillTranslation(msgEl, t, getBcp(myLang));
     },
     () => { if (themListening) startThemListening(); },
-    err => showToast("Mic error: "+err)
+    err => showToast("Mic error: " + err)
   );
-  themRecog.start();
+  try { themRecog.start(); } catch(e) { console.warn(e); }
 }
 
 themBtn.onclick = () => {
@@ -385,13 +419,16 @@ themBtn.onclick = () => {
     themBtn.classList.add("active"); themCard.classList.add("active");
     themBtn.innerHTML = "⏹ Stop";
     animateWave(themWave, true); setCallStatus(true);
-    startThemListening(); showToast("Listening to them…");
-  } else { stopThem(); }
+    startThemListening();
+    showToast("Listening to them…");
+  } else {
+    stopThem();
+  }
 };
 
 function stopThem() {
   themListening = false;
-  if (themRecog) { try{themRecog.abort()}catch(_){} themRecog=null; }
+  if (themRecog) { try { themRecog.abort(); } catch(_){} themRecog = null; }
   themBtn.classList.remove("active"); themCard.classList.remove("active");
   themBtn.innerHTML = "🎧 Listen";
   animateWave(themWave, false);
@@ -400,18 +437,20 @@ function stopThem() {
 
 // ── MY SIDE ──────────────────────────────────────────────────────
 function startMeListening() {
+  const bcp = getBcp(myLang);
   meRecog = makeRecog(
-    getBcp(myLang),
+    bcp,
     async (text) => {
-      const msgEl = addMessage("me", text, getBcp(theirLang));
-      glowMe.classList.add("hot"); setTimeout(()=>glowMe.classList.remove("hot"),1500);
+      const msgEl = addMessage("me", text);
+      glowMe.classList.add("hot");
+      setTimeout(() => glowMe.classList.remove("hot"), 1500);
       const t = await translate(text, getCode(myLang), getCode(theirLang));
       fillTranslation(msgEl, t, getBcp(theirLang));
     },
     () => { if (meListening) startMeListening(); },
-    err => showToast("Mic error: "+err)
+    err => showToast("Mic error: " + err)
   );
-  meRecog.start();
+  try { meRecog.start(); } catch(e) { console.warn(e); }
 }
 
 meBtn.onclick = () => {
@@ -421,13 +460,16 @@ meBtn.onclick = () => {
     meBtn.classList.add("active"); meCard.classList.add("active");
     meBtn.innerHTML = "⏹ Stop";
     animateWave(meWave, true); setCallStatus(true);
-    startMeListening(); showToast("Listening to you…");
-  } else { stopMe(); }
+    startMeListening();
+    showToast("Listening to you…");
+  } else {
+    stopMe();
+  }
 };
 
 function stopMe() {
   meListening = false;
-  if (meRecog) { try{meRecog.abort()}catch(_){} meRecog=null; }
+  if (meRecog) { try { meRecog.abort(); } catch(_){} meRecog = null; }
   meBtn.classList.remove("active"); meCard.classList.remove("active");
   meBtn.innerHTML = "🎤 Speak";
   animateWave(meWave, false);
@@ -436,87 +478,47 @@ function stopMe() {
 
 // ── TYPE BAR ─────────────────────────────────────────────────────
 async function sendTyped() {
-  const text = typeInput.value.trim(); if (!text) return;
+  const text = typeInput.value.trim();
+  if (!text) return;
   typeInput.value = "";
-  const msgEl = addMessage("me", text, getBcp(theirLang));
+  const msgEl = addMessage("me", text);
   const t = await translate(text, getCode(myLang), getCode(theirLang));
   fillTranslation(msgEl, t, getBcp(theirLang));
 }
 typeSend.onclick = sendTyped;
-typeInput.addEventListener("keydown", e => { if(e.key==="Enter") sendTyped(); });
+typeInput.addEventListener("keydown", e => { if (e.key === "Enter") sendTyped(); });
 
 // ── SWAP ─────────────────────────────────────────────────────────
 swapBtn.onclick = () => {
-  if (themListening || meListening) { showToast("Stop listening before swapping"); return; }
-  const tv = theirLang.value, mv = myLang.value;
-  // Check if each value exists in the other dropdown
-  const themHasMy   = Array.from(theirLang.options).some(o => o.value === mv);
-  const myHasThem   = Array.from(myLang.options).some(o => o.value === tv);
-  if (themHasMy && myHasThem) {
-    theirLang.value = mv; myLang.value = tv;
+  if (themListening || meListening) {
+    showToast("Stop listening before swapping");
+    return;
+  }
+  const tv = theirLang.value; // e.g. "it"
+  const mv = myLang.value;    // e.g. "en"
+
+  // Both dropdowns share the same value scheme (2-letter codes)
+  // so we can always swap directly
+  const themHasMy = Array.from(theirLang.options).some(o => o.value === mv);
+  const myHasThem = Array.from(myLang.options).some(o => o.value === tv);
+
+  if (themHasMy) theirLang.value = mv;
+  if (myHasThem) myLang.value    = tv;
+
+  // Edge: if "en" not in theirLang (shouldn't happen but safe fallback)
+  if (!themHasMy || !myHasThem) {
+    showToast("Partial swap — one language not available on both sides");
   } else {
-    // Fall back to code-based matching
-    const tc = getCode(theirLang), mc = getCode(myLang);
-    const nt = Array.from(theirLang.options).find(o => o.dataset.code===mc);
-    const nm = Array.from(myLang.options).find(o => o.dataset.code===tc);
-    if (nt) theirLang.value = nt.value;
-    if (nm) myLang.value    = nm.value;
+    showToast("Languages swapped ✓");
   }
   updateFlags();
-  showToast("Languages swapped ✓");
 };
 
-// ── NO SR ────────────────────────────────────────────────────────
+// ── NO SR FALLBACK ───────────────────────────────────────────────
 if (!SR) {
-  [themBtn, meBtn].forEach(b => { b.disabled=true; b.style.opacity="0.35"; });
-  showToast("Speech not supported in this browser", 5000);
+  [themBtn, meBtn].forEach(b => { b.disabled = true; b.style.opacity = "0.35"; });
+  showToast("Speech recognition not supported in this browser", 5000);
 }
 </script>
-
-<!--
-╔═══════════════════════════════════════════════════════╗
-║  SUPABASE EDGE FUNCTION                               ║
-║  supabase/functions/translate-assistant/index.ts      ║
-╚═══════════════════════════════════════════════════════╝
-
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-
-const CORS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, content-type",
-  "Content-Type": "application/json"
-}
-
-serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: CORS })
-
-  const { text, source_lang, target_lang } = await req.json()
-
-  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Authorization": "Bearer YOUR_OPENROUTER_KEY",
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      model: "mistralai/mistral-7b-instruct:free",
-      messages: [{
-        role: "user",
-        content: `Translate from ${source_lang} to ${target_lang}. Return ONLY valid JSON: {"translation":"..."}\n\nText: ${text}`
-      }],
-      temperature: 0.1
-    })
-  })
-
-  const data = await res.json()
-  let raw = data.choices[0].message.content.trim()
-  let parsed
-  try { parsed = JSON.parse(raw) }
-  catch { parsed = { translation: raw.replace(/```json|```/g,"").trim() } }
-
-  return new Response(JSON.stringify(parsed), { headers: CORS })
-})
--->
-
 </body>
 </html>
